@@ -1,0 +1,387 @@
+.app {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  margin-bottom: 24px;
+  color: #333;
+  font-size: 28px;
+}
+
+.controls {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 12px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-bottom: 24px;
+}
+
+.decision-matrix {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.decision-matrix th,
+.decision-matrix td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: center;
+}
+
+.decision-matrix th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.decision-matrix .criterion-col {
+  text-align: left;
+  background-color: #f8f9fa;
+  min-width: 200px;
+  font-weight: 500;
+}
+
+
+.decision-matrix .option-col {
+  min-width: 150px;
+}
+
+.decision-matrix .mark-col {
+  min-width: 120px;
+}
+
+.decision-matrix .total-col {
+  background-color: #fff3cd;
+  font-size: 16px;
+}
+
+.total-value {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.percentage-advantage {
+  font-size: 12px;
+  color: #28a745;
+  font-weight: 600;
+  background-color: #d4edda;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.totals-row {
+  background-color: #fff3cd;
+}
+
+.totals-row td {
+  font-weight: 600;
+}
+
+.criterion-content,
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.drag-handle {
+  cursor: move;
+  cursor: grab;
+  color: #666;
+  font-size: 18px;
+  padding: 4px 8px;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.decision-matrix tbody tr input {
+  cursor: text;
+}
+
+.decision-matrix tbody tr.dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.decision-matrix tbody tr.drag-over {
+  border-top: 3px solid #007bff;
+}
+
+.weight-display {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #666;
+}
+
+.weight-display strong {
+  color: #333;
+  font-size: 13px;
+}
+
+.criterion-input,
+.header-input {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.criterion-input:focus,
+.header-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.cell-input {
+  width: 60px;
+  padding: 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.cell-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.hint {
+  display: block;
+  font-size: 11px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.remove-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background-color 0.2s;
+}
+
+.remove-btn:hover {
+  background: #c82333;
+}
+
+.info {
+  margin-top: 24px;
+  padding: 16px;
+  background-color: #e7f3ff;
+  border-left: 4px solid #007bff;
+  border-radius: 4px;
+}
+
+.info p {
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.info ul {
+  margin-left: 20px;
+  color: #555;
+}
+
+.info li {
+  margin-bottom: 4px;
+}
+
+.header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header-bar h1 {
+  margin-bottom: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.matrix-name-section {
+  margin-bottom: 20px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+}
+
+.matrix-name-section label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.matrix-name-input {
+  flex: 1;
+  max-width: 400px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.matrix-name-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+.btn-small {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.file-upload-label {
+  cursor: pointer;
+  display: inline-block;
+}
+
+.catalog-controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.catalog {
+  margin-top: 20px;
+}
+
+.empty-catalog {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.empty-catalog p {
+  margin-bottom: 8px;
+}
+
+.matrix-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.matrix-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s;
+}
+
+.matrix-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.matrix-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.matrix-card-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+  flex: 1;
+  margin-right: 12px;
+}
+
+.matrix-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.matrix-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.matrix-card-info p {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+}
