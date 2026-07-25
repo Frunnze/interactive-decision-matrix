@@ -3,6 +3,38 @@ import './App.css'
 
 const STORAGE_KEY = 'decision_matrices'
 const CURRENT_MATRIX_KEY = 'current_matrix_id'
+const EPSILON = 1e-9
+
+const clampMark = (value, optionCount) => {
+  const num = Math.round(Number(value))
+  if (!Number.isFinite(num)) return 1
+  return Math.max(1, Math.min(optionCount, num))
+}
+
+const deriveWeights = (criteria) => criteria.map((_, index) => criteria.length - index)
+
+const weightsContradictOrder = (criteria, storedWeights) => {
+  if (!Array.isArray(storedWeights) || storedWeights.length !== criteria.length) return false
+  const derived = deriveWeights(criteria)
+  return storedWeights.some((w, i) => Number(w) !== derived[i])
+}
+
+const normalizeMatrix = (data) => {
+  const criteria = Array.isArray(data.criteria) && data.criteria.length > 0
+    ? data.criteria.map(String)
+    : ['Criterion 1']
+  const options = Array.isArray(data.options) && data.options.length > 0
+    ? data.options.map(String)
+    : ['Option 1']
+
+  const rawMarks = Array.isArray(data.marks) ? data.marks : []
+  const marks = criteria.map((_, criterionIndex) => {
+    const row = Array.isArray(rawMarks[criterionIndex]) ? rawMarks[criterionIndex] : []
+    return options.map((_, optionIndex) => clampMark(row[optionIndex], options.length))
+  })
+
+  return { criteria, options, marks }
+}
 
 function App() {
   const [showCatalog, setShowCatalog] = useState(false)
@@ -18,9 +50,7 @@ function App() {
   const [savedMatrices, setSavedMatrices] = useState([])
   const [draggedIndex, setDraggedIndex] = useState(null)
 
-  const weights = useMemo(() => {
-    return criteria.map((_, index) => criteria.length - index)
-  }, [criteria])
+  const weights = useMemo(() => deriveWeights(criteria), [criteria])
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY)
@@ -33,10 +63,11 @@ function App() {
         if (currentId) {
           const matrix = matrices.find(m => m.id === currentId)
           if (matrix) {
+            const normalized = normalizeMatrix(matrix)
             setMatrixName(matrix.name)
-            setCriteria(matrix.criteria)
-            setOptions(matrix.options)
-            setMarks(matrix.marks)
+            setCriteria(normalized.criteria)
+            setOptions(normalized.options)
+            setMarks(normalized.marks)
             setCurrentMatrixId(matrix.id)
           }
         }
@@ -91,10 +122,11 @@ function App() {
   const loadMatrix = (matrixId) => {
     const matrix = savedMatrices.find(m => m.id === matrixId)
     if (matrix) {
+      const normalized = normalizeMatrix(matrix)
       setMatrixName(matrix.name)
-      setCriteria(matrix.criteria)
-      setOptions(matrix.options)
-      setMarks(matrix.marks)
+      setCriteria(normalized.criteria)
+      setOptions(normalized.options)
+      setMarks(normalized.marks)
       setCurrentMatrixId(matrix.id)
       localStorage.setItem(CURRENT_MATRIX_KEY, matrix.id)
       setShowCatalog(false)
@@ -135,10 +167,20 @@ function App() {
       reader.onload = (e) => {
         try {
           const matrixData = JSON.parse(e.target.result)
+          const normalized = normalizeMatrix(matrixData)
+
+          if (weightsContradictOrder(normalized.criteria, matrixData.weights)) {
+            alert(
+              'The "weights" in this file do not match its criteria order.\n\n' +
+              'Weights are always recalculated from row order (first criterion = highest), ' +
+              'so the stored values were ignored. Drag rows to change the weighting.'
+            )
+          }
+
           setMatrixName(matrixData.name || 'Imported Matrix')
-          setCriteria(matrixData.criteria || ['Criterion 1'])
-          setOptions(matrixData.options || ['Option 1'])
-          setMarks(matrixData.marks || [[1]])
+          setCriteria(normalized.criteria)
+          setOptions(normalized.options)
+          setMarks(normalized.marks)
           setCurrentMatrixId(null)
           setShowCatalog(false)
         } catch (error) {
@@ -156,12 +198,15 @@ function App() {
   }, [weights])
 
   const totals = useMemo(() => {
+    if (totalSumWeights === 0) return options.map(() => 0)
+
     return options.map((_, optionIndex) => {
-      return criteria.reduce((total, _, criterionIndex) => {
-        const mark = marks[criterionIndex][optionIndex]
+      const weightedSum = criteria.reduce((total, _, criterionIndex) => {
+        const mark = marks[criterionIndex]?.[optionIndex] ?? 0
         const weight = weights[criterionIndex]
-        return total + (mark * weight / totalSumWeights)
+        return total + (mark * weight)
       }, 0)
+      return weightedSum / totalSumWeights
     })
   }, [marks, weights, totalSumWeights, criteria.length, options.length])
 
@@ -172,7 +217,7 @@ function App() {
     const highest = sortedTotals[0]
     const secondHighest = sortedTotals[1]
     
-    if (highest === secondHighest || secondHighest === 0) return null
+    if (highest - secondHighest <= EPSILON || secondHighest === 0) return null
     
     const highestIndex = totals.indexOf(highest)
     
@@ -229,10 +274,8 @@ function App() {
   }
 
   const handleMarkChange = (criterionIndex, optionIndex, value) => {
-    const numValue = parseInt(value) || 1
-    const maxMark = options.length
-    const clampedValue = Math.max(1, Math.min(maxMark, numValue))
-    
+    const clampedValue = clampMark(value, options.length)
+
     const newMarks = marks.map((row, i) => {
       if (i === criterionIndex) {
         return row.map((mark, j) => j === optionIndex ? clampedValue : mark)
@@ -249,25 +292,8 @@ function App() {
 
   const removeCriterion = (index) => {
     if (criteria.length <= 1) return
-    const newCriteria = criteria.filter((_, i) => i !== index)
-    const newWeights = weights.filter((_, i) => i !== index)
-    const newMarks = marks.filter((_, i) => i !== index)
-    
-    const reassignedWeights = newWeights.map((_, i) => i + 1)
-    
-    setCriteria(newCriteria)
-    setWeights(reassignedWeights)
-    setMarks(newMarks)
-    const newWeightInputs = {}
-    Object.keys(weightInputs).forEach(key => {
-      const keyIndex = parseInt(key)
-      if (keyIndex < index) {
-        newWeightInputs[keyIndex] = weightInputs[keyIndex]
-      } else if (keyIndex > index) {
-        newWeightInputs[keyIndex - 1] = weightInputs[keyIndex]
-      }
-    })
-    setWeightInputs(newWeightInputs)
+    setCriteria(criteria.filter((_, i) => i !== index))
+    setMarks(marks.filter((_, i) => i !== index))
   }
 
   const addOption = () => {
@@ -277,8 +303,13 @@ function App() {
 
   const removeOption = (index) => {
     if (options.length <= 1) return
-    setOptions(options.filter((_, i) => i !== index))
-    setMarks(marks.map(row => row.filter((_, i) => i !== index)))
+    const newOptions = options.filter((_, i) => i !== index)
+    setOptions(newOptions)
+    setMarks(marks.map(row =>
+      row
+        .filter((_, i) => i !== index)
+        .map(mark => clampMark(mark, newOptions.length))
+    ))
   }
 
   const updateCriterionName = (index, value) => {
